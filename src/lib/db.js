@@ -4,21 +4,13 @@ const globalForPrisma = globalThis;
 
 let prismaInstance;
 
-// Если Vercel пытается запустить код во время генерации статических страниц (сборки)
-if (process.env.NEXT_PHASE === 'phase-production-build' || !process.env.DATABASE_URL) {
-  // Возвращаем пустой прокси-объект, чтобы методы вроде db.board.findUnique() не вызывали ошибку конструктора
-  prismaInstance = new Proxy({}, {
-    get: () => () => Promise.resolve(null)
-  });
+// Самая надёжная проверка: если сборщик Vercel компилирует проект, 
+// мы отдаём ему пустой объект, полностью блокируя создание PrismaClient
+if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.NODE_ENV === 'test') {
+  prismaInstance = {}; 
 } else {
-  // В продакшене запускаем реальную Prisma
-  prismaInstance = globalForPrisma.prisma ?? new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  });
+  // Реальная база данных включится только когда сайт запустится в браузере
+  prismaInstance = globalForPrisma.prisma ?? new PrismaClient();
   if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaInstance;
 }
 
