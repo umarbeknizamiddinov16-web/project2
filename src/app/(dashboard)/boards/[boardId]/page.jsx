@@ -1,8 +1,9 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'; // Оставляем ОДНУ строчку в самом верху
+
 import { prisma as db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
-import { createTask } from "@/server/actions/task"; // Мы создадим этот action следующим
+import { createTask } from "@/server/actions/task";
 
 export default async function BoardIdPage({ params }) {
   const { userId } = await auth();
@@ -11,11 +12,11 @@ export default async function BoardIdPage({ params }) {
   // 1. Загружаем доску и проверяем, принадлежит ли она этому пользователю
   const board = await db.board.findUnique({
     where: { id: boardId },
-    include: { tasks: true }, // Сразу подтягиваем все задачи этой доски
+    include: { tasks: true }, 
   });
 
   if (!board || board.userId !== userId) {
-    return notFound(); // Если доска чужая или её нет — показываем 404
+    return notFound(); 
   }
 
   // 2. Группируем задачи по колонкам/статусам
@@ -33,7 +34,6 @@ export default async function BoardIdPage({ params }) {
       <div className="bg-white p-4 rounded-xl border border-gray-200 mb-8 max-w-md">
         <h3 className="font-semibold text-gray-700 mb-2 text-sm">Быстро добавить задачу</h3>
         <form action={createTask} className="flex gap-2">
-          {/* Скрытое поле, чтобы передать ID доски в Server Action */}
           <input type="hidden" name="boardId" value={boardId} />
           <input
             type="text"
@@ -91,6 +91,4 @@ export default async function BoardIdPage({ params }) {
 export function generateStaticParams() {
   return [];
 }
-
-// Убедитесь, что эта строчка у вас всё ещё стоит на самой первой строке файла:
-export const dynamic = 'force-dynamic';
+// Снизу дубликат строки удалён!
