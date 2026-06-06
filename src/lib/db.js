@@ -2,15 +2,24 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis;
 
-// Проверяем, есть ли URL базы данных. Если нет (например, при сборке) — передаем пустую строку, чтобы предотвратить крэш конструктора.
-const databaseUrl = process.env.DATABASE_URL || "";
+let prismaInstance;
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  datasources: {
-    db: {
-      url: databaseUrl,
+// Если Vercel пытается запустить код во время генерации статических страниц (сборки)
+if (process.env.NEXT_PHASE === 'phase-production-build' || !process.env.DATABASE_URL) {
+  // Возвращаем пустой прокси-объект, чтобы методы вроде db.board.findUnique() не вызывали ошибку конструктора
+  prismaInstance = new Proxy({}, {
+    get: () => () => Promise.resolve(null)
+  });
+} else {
+  // В продакшене запускаем реальную Prisma
+  prismaInstance = globalForPrisma.prisma ?? new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
     },
-  },
-});
+  });
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaInstance;
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma = prismaInstance;
