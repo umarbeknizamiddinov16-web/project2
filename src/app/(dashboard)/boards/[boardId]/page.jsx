@@ -86,3 +86,11 @@ export default async function BoardIdPage({ params }) {
     </div>
   );
 }
+
+// Этот код говорит Next.js: "Во время сборки тут пусто, не пытайся генерировать эту страницу заранее!"
+export function generateStaticParams() {
+  return [];
+}
+
+// Убедитесь, что эта строчка у вас всё ещё стоит на самой первой строке файла:
+export const dynamic = 'force-dynamic';
