@@ -1,4 +1,5 @@
-import { db } from "@/lib/db";
+export const dynamic = 'force-dynamic';
+import { prisma as db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { createTask } from "@/server/actions/task"; // Мы создадим этот action следующим
